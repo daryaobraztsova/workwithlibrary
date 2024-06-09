@@ -1,0 +1,87 @@
+#include <QApplication>
+#include <QWidget>
+#include <QPushButton>
+#include <QLabel>
+#include <QFileDialog>
+#include <QLineEdit>
+#include <QGridLayout>
+#include <QStringList>
+
+#include <aspose.words.h>
+
+class WordGeneratorWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    WordGeneratorWidget(QWidget *parent = nullptr) : QWidget(parent) {
+        auto createButton = new QPushButton("Создать документ", this);
+        auto labelName = new QLabel("Имя:", this);
+        auto labelAge = new QLabel("Возраст:", this);
+        auto lineEditName = new QLineEdit(this);
+        auto lineEditAge = new QLineEdit(this);
+        auto labelResult = new QLabel("Результат", this);
+
+        // Создаем макет
+        QGridLayout *grid = new QGridLayout(this);
+        grid->addWidget(labelName, 0, 0);
+        grid->addWidget(lineEditName, 0, 1);
+        grid->addWidget(labelAge, 1, 0);
+        grid->addWidget(lineEditAge, 1, 1);
+        grid->addWidget(createButton, 2, 0, 1, 2);
+        grid->addWidget(labelResult, 3, 0, 1, 2);
+
+        // Подключение сигналов и слотов
+        connect(createButton, &QPushButton::clicked, this, &WordGeneratorWidget::createWordDocument);
+
+        setLayout(grid);
+    }
+
+private slots:
+    void createWordDocument() {
+        QString fileName = QFileDialog::getSaveFileName(this, "Сохранить документ", QDir::currentPath(), "Документы Word (*.docx)");
+        if (fileName.isEmpty()) {
+            return; 
+        }
+
+        // Получение данных из полей ввода
+        QString name = ui->lineEditName->text();
+        QString age = ui->lineEditAge->text();
+
+        // Создание документа Word
+        Aspose::Words::Document doc = Aspose::Words::Document();
+
+        // Добавление заголовка
+        Aspose::Words::Paragraph paragraph = doc.get_FirstSection().get_Body().AddParagraph();
+        paragraph.get_Runs().Add(Aspose::Words::Run(doc, "Информация о пользователе"));
+        paragraph.get_Format().get_ParagraphFormat().setAlignment(Aspose::Words::ParagraphAlignment::Center);
+        paragraph.get_Format().get_Font().setName("Arial");
+        paragraph.get_Format().get_Font().setSize(16);
+
+        // Добавление таблицы с данными
+        Aspose::Words::Table table = doc.get_FirstSection().get_Body().AddTable();
+        table.set_AllowAutoFit(true);
+        table.set_PreferredWidth(Aspose::Words::PreferredWidth::Percent(100));
+
+        // Заполнение таблицы
+        table->get_Rows().Add(Aspose::Words::Row(doc)); 
+        table->get_Rows()[0]->get_Cells()[0]->AddParagraph(Aspose::Words::Run(doc, "Имя:"));
+        table->get_Rows()[0]->get_Cells()[1]->AddParagraph(Aspose::Words::Run(doc, name));
+
+        table->get_Rows().Add(Aspose::Words::Row(doc)); 
+        table->get_Rows()[1]->get_Cells()[0]->AddParagraph(Aspose::Words::Run(doc, "Возраст:"));
+        table->get_Rows()[1]->get_Cells()[1]->AddParagraph(Aspose::Words::Run(doc, age));
+
+        // Сохранение документа
+        doc.Save(fileName.toStdString().c_str(), Aspose::Words::SaveFormat::Docx);
+
+        // Отображаем сообщение об успешном создании
+        ui->labelResult->setText("Документ успешно создан!");
+    }
+};
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+    WordGeneratorWidget widget;
+    widget.show();
+    return app.exec();
+}

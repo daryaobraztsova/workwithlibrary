@@ -1,0 +1,75 @@
+#include <iostream>
+#include <string>
+
+#include <fstream>
+#include <sstream>
+
+#include <zip.hpp>
+#include <zlib.h>
+
+#include <wtypes.h> // Для использования VARIANT
+
+#define _WIN32_WINNT 0x0601 // Для использования VARIANT
+
+using namespace std;
+
+// Функция для добавления текста в документ
+void addText(string text, Aspose::Words::DocumentBuilder& builder) {
+    // Создаем новый абзац
+    Aspose::Words::Paragraph paragraph = builder.InsertParagraph();
+
+    // Добавляем текст в абзац
+    paragraph.get_Runs().Add(Aspose::Words::Run(builder.getDocument(), text));
+}
+
+// Функция для добавления таблицы в документ
+void addTable(Aspose::Words::DocumentBuilder& builder) {
+    // Создаем таблицу
+    Aspose::Words::Table table = builder.StartTable();
+
+    // Добавляем строки и ячейки
+    table->get_Rows().Add(Aspose::Words::Row(builder.getDocument()));
+    table->get_Rows().Add(Aspose::Words::Row(builder.getDocument()));
+    table->get_Rows()[0]->get_Cells()[0]->AddParagraph(Aspose::Words::Run(builder.getDocument(), "Имя:"));
+    table->get_Rows()[0]->get_Cells()[1]->AddParagraph(Aspose::Words::Run(builder.getDocument(), "Иван Иванов"));
+    table->get_Rows()[1]->get_Cells()[0]->AddParagraph(Aspose::Words::Run(builder.getDocument(), "Возраст:"));
+    table->get_Rows()[1]->get_Cells()[1]->AddParagraph(Aspose::Words::Run(builder.getDocument(), "30"));
+
+    // Завершаем создание таблицы
+    builder.EndTable();
+}
+
+int main() {
+    // Загружаем Open XML SDK
+    Aspose::Words::DocumentBuilder builder = Aspose::Words::DocumentBuilder();
+
+    // Добавляем текст
+    addText("Заголовок документа", builder);
+    addText("Это текст документа", builder);
+
+    // Добавляем таблицу
+    addTable(builder);
+
+    // Сохраняем документ
+    builder.getDocument().Save("my_document.docx", Aspose::Words::SaveFormat::Docx);
+
+    return 0;
+}
+
+Объяснение:
+Создание документа:
+
+Aspose::Words::DocumentBuilder builder = Aspose::Words::DocumentBuilder();
+Создаем объект DocumentBuilder, который позволяет манипулировать содержимым документа Word.
+
+Добавление текста и таблиц:
+
+addText("Заголовок документа", builder);
+addText("Это текст документа", builder);
+addTable(builder);
+Вызов функции addText и addTable для добавления текста и таблицы в документ.
+
+Сохранение документ:
+
+builder.getDocument().Save("my_document.docx", Aspose::Words::SaveFormat::Docx);
+Сохраняем документ в формате .docx.

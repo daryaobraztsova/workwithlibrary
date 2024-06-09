@@ -1,0 +1,53 @@
+#include <QApplication>
+#include <QWidget>
+#include <QPushButton>
+#include <QLabel>
+#include <QFileDialog>
+
+#include <aspose.words.h> // Включите заголовочный файл Aspose.Words
+
+class WordGeneratorWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    WordGeneratorWidget(QWidget *parent = nullptr) : QWidget(parent) {
+        auto createButton = new QPushButton("Создать документ", this);
+        auto label = new QLabel("Выберите имя файла", this);
+
+        // ... расположите элементы на виджете
+
+        connect(createButton, &QPushButton::clicked, this, &WordGeneratorWidget::createWordDocument);
+    }
+
+private slots:
+    void createWordDocument() {
+        QString fileName = QFileDialog::getSaveFileName(this, "Сохранить документ", QDir::currentPath(), "Документы Word (*.docx)");
+        if (fileName.isEmpty()) {
+            return; // Пользователь отменил сохранение
+        }
+
+        // Используйте Aspose.Words для создания документа
+        Aspose::Words::Document doc = Aspose::Words::Document();
+        Aspose::Words::Paragraph para = doc.get_FirstSection().get_Body().AddParagraph();
+        para.get_Runs().Add(Aspose::Words::Run(doc, "Привет мир!"));
+
+        // Сохранение документа
+        doc.Save(fileName.toStdString().c_str(), Aspose::Words::SaveFormat::Docx);
+
+        // ... уведомление пользователя о успешном создании файла
+    }
+};
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    WordGeneratorWidget widget;
+    widget.show();
+
+    return app.exec();
+}
+
+
+Объяснение:
+QFileDialog для получения от пользователя имени файла.
+Используйте Aspose.Words для создания документа
