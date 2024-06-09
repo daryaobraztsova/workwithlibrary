@@ -1,0 +1,41 @@
+Пример использования Aspose.Cells с Boost:
+
+#include <iostream>
+#include <string>
+
+#include <boost/format.hpp>
+
+#include <aspose.cells.h>
+
+using namespace Aspose::Cells;
+
+int main() {
+    // Создание нового документа
+    Workbook workbook = Workbook();
+
+    // Получаем данные для заполнения документа
+    std::string name = "Иван Иванов";
+    int age = 30;
+
+    // Добавляем лист
+    Worksheet sheet = workbook.getWorksheets().Add("Лист1");
+
+    // Устанавливаем заголовок
+    sheet.getCells().get(0, 0).setValue(std::string("Информация о пользователе"));
+    sheet.getCells().get(0, 0).getStyle().getFont().setBold(true);
+
+    // Добавляем данные
+    sheet.getCells().get(1, 0).setValue(std::string("Имя:"));
+    sheet.getCells().get(1, 1).setValue(name);
+    sheet.getCells().get(2, 0).setValue(std::string("Возраст:"));
+    boost::format formattedAge("%d");
+    formattedAge % age;
+    sheet.getCells().get(2, 1).setValue(formattedAge.str());
+
+    // Сохраняем документ
+    workbook.save("my_document.xlsx", FileFormat::XLSX);
+
+    std::cout << "Документ успешно сохранен!" << std::endl;
+
+    return 0;
+}

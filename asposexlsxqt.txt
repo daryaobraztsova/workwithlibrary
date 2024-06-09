@@ -1,0 +1,79 @@
+#include <QApplication>
+#include <QWidget>
+#include <QPushButton>
+#include <QLabel>
+#include <QFileDialog>
+#include <QLineEdit>
+#include <QGridLayout>
+#include <QString>
+
+#include <aspose.cells.h>
+
+class ExcelGeneratorWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    ExcelGeneratorWidget(QWidget *parent = nullptr) : QWidget(parent) {
+        auto createButton = new QPushButton("Создать Excel", this);
+        auto labelName = new QLabel("Имя:", this);
+        auto labelAge = new QLabel("Возраст:", this);
+        auto lineEditName = new QLineEdit(this);
+        auto lineEditAge = new QLineEdit(this);
+        auto labelResult = new QLabel("Результат", this);
+
+        // Создаем макет
+        QGridLayout *grid = new QGridLayout(this);
+        grid->addWidget(labelName, 0, 0);
+        grid->addWidget(lineEditName, 0, 1);
+        grid->addWidget(labelAge, 1, 0);
+        grid->addWidget(lineEditAge, 1, 1);
+        grid->addWidget(createButton, 2, 0, 1, 2);
+        grid->addWidget(labelResult, 3, 0, 1, 2);
+
+        // Подключение сигналов и слотов
+        connect(createButton, &QPushButton::clicked, this, &ExcelGeneratorWidget::createExcelDocument);
+
+        setLayout(grid);
+    }
+
+private slots:
+    void createExcelDocument() {
+        QString fileName = QFileDialog::getSaveFileName(this, "Сохранить Excel", QDir::currentPath(), "Excel файлы (*.xlsx)");
+        if (fileName.isEmpty()) {
+            return; 
+        }
+
+        // Получение данных из полей ввода
+        QString name = lineEditName->text();
+        QString age = lineEditAge->text();
+
+        // Создание документа Excel
+        Aspose::Cells::Workbook workbook = Aspose::Cells::Workbook();
+
+        // Добавляем лист
+        Aspose::Cells::Worksheet sheet = workbook.getWorksheets().Add("Лист1");
+
+        // Устанавливаем заголовок
+        sheet.getCells().get(0, 0).setValue(QString("Информация о пользователе").toStdString());
+        sheet.getCells().get(0, 0).getStyle().getFont().setBold(true);
+
+        // Добавляем данные
+        sheet.getCells().get(1, 0).setValue(QString("Имя:").toStdString());
+        sheet.getCells().get(1, 1).setValue(name.toStdString());
+        sheet.getCells().get(2, 0).setValue(QString("Возраст:").toStdString());
+        sheet.getCells().get(2, 1).setValue(age.toStdString());
+
+        // Сохраняем документ
+        workbook.save(fileName.toStdString(), Aspose::Cells::FileFormat::XLSX);
+
+        // Отображаем сообщение об успешном создании
+        labelResult->setText("Документ Excel успешно создан!");
+    }
+};
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+    ExcelGeneratorWidget widget;
+    widget.show();
+    return app.exec();
+}
